@@ -4,24 +4,19 @@ import com.nadir.vk_internship.entity.AccessRole;
 import com.nadir.vk_internship.entity.ApiUser;
 import com.nadir.vk_internship.repository.UserRepo;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import javax.accessibility.AccessibleComponent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -120,9 +115,11 @@ public class ApiController {
             return checkResult;
         }
 
-        log.info(getUser() + " added resource " + body + ".");
+        ResponseEntity<String> addedResource = REST_TEMPLATE.postForEntity(RESOURCE_URL + path, body, String.class);
 
-        return REST_TEMPLATE.postForEntity(RESOURCE_URL + path, body, String.class);
+        log.info(getUser() + " added resource " + addedResource.getBody() + ".");
+
+        return addedResource;
     }
 
     public ResponseEntity<String> putResource(String path, int resourceId, Object body, AccessRole accessRole) {
@@ -132,10 +129,15 @@ public class ApiController {
         }
 
         HttpEntity<Object> entity = new HttpEntity<>(body);
+        ResponseEntity<String> updatedResource = REST_TEMPLATE.exchange(RESOURCE_URL + path + resourceId,
+                HttpMethod.PUT,
+                entity,
+                String.class,
+                resourceId);
 
-        log.info(getUser() + " updated resource " + body + ".");
+        log.info(getUser() + " updated resource " + updatedResource.getBody() + ".");
 
-        return REST_TEMPLATE.exchange(RESOURCE_URL + path + resourceId, HttpMethod.PUT, entity, String.class, resourceId);
+        return updatedResource;
     }
 
     public ResponseEntity<String> deleteResource(String path, int resourceId, AccessRole accessRole) {
