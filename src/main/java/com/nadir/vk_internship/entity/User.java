@@ -39,6 +39,7 @@ public class User {
         return "User{" +
                 "id=" + id +
                 ", login='" + login + '\'' +
+                ", pswd='" + pswd + '\'' +
                 ", role=" + role +
                 '}';
     }
