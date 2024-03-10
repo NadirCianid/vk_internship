@@ -40,7 +40,7 @@ public class ApiController {
     @Autowired
     public ApiController(UserRepo userRepo) {
         this.userRepo = userRepo;
-        user = new ApiUser("guest", "1111", AccessRole.ROLE_GUEST);
+        user = userRepo.getReferenceById(4);
     }
 
     @GetMapping("/api")
@@ -65,7 +65,7 @@ public class ApiController {
         user = userRepo.authenticate(login, pswd);
 
         if (user == null) {
-            user = new ApiUser("guest", "1111", AccessRole.ROLE_GUEST);
+            user = userRepo.getReferenceById(4);
             guestMessage = "Пользователя с введенными данными нет в базе. \nВы авторизованы, как гость:\n";
         }
 
@@ -77,26 +77,29 @@ public class ApiController {
     @GetMapping("/api/auth/allUsers")
     private List<String> getAllUsers() {
         if (user.getRole().equals(AccessRole.ROLE_ADMIN)) {
+            log.info(user + " printed all users list.");
             return userRepo.findAll().stream().map(ApiUser::toString).toList();
         }
         return new ArrayList<>(Collections.singleton(NO_ACCESS_MESSAGE));
     }
 
     @PostMapping("/api/auth/addUser")
-    private String addUser(@RequestParam String login, @RequestParam String pswd, @RequestParam int roleId) {
-        if (!user.getRole().equals(AccessRole.ROLE_ADMIN)) {
-            return NO_ACCESS_MESSAGE;
+    private ResponseEntity<String> addUser(@RequestParam String login, @RequestParam String pswd, @RequestParam int roleId) {
+        ResponseEntity<String> checkResult = checkAccessRole("/api/auth/addUser", AccessRole.ROLE_ADMIN, " tried to get resource ");
+        if (checkResult != null) {
+            return checkResult;
         }
 
         if (userRepo.userCountByLogin(login) > 0) {
-            return "Пользователь с таким логином уже существует";
+            log.info(user + " tried to create new user: login=" + login + "; pswd=" + pswd + "; roleId=" + roleId + ".");
+            return new ResponseEntity<>("Пользователь с таким логином уже существует", HttpStatus.OK);
         }
 
         ApiUser newUser = new ApiUser(login, pswd, AccessRole.values()[roleId]);
 
-        log.info(newUser + "created by " + user);
+        log.info(newUser + " created by " + user);
 
-        return userRepo.save(newUser).toString();
+        return new ResponseEntity<>(userRepo.save(newUser).toString(), HttpStatus.OK);
     }
 
     public ResponseEntity<String> getResource(String path, AccessRole accessRole) {
