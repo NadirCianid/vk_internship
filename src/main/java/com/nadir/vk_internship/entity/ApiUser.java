@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "users")
-public class User {
+public class ApiUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -25,13 +25,13 @@ public class User {
 
     private AccessRole role;
 
-    public User(String login, String pswd, AccessRole role) {
+    public ApiUser(String login, String pswd, AccessRole role) {
         this.login = login;
         this.pswd = pswd;
         this.role = role;
     }
 
-    public User() {
+    public ApiUser() {
     }
 
     @Override
