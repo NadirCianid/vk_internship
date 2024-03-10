@@ -7,16 +7,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.nadir.vk_internship.controller.ApiController.getResource;
+
 
 @Slf4j
 @RequestMapping("/api/users")
 @RestController
 public class UsersController {
+    private final ApiController apiController;
+
+    public UsersController(ApiController apiController) {
+        this.apiController = apiController;
+    }
 
     //Listing all resources
     @GetMapping("")
     private ResponseEntity<String> getUsers() {
-        return getResource("/users/", AccessRole.ROLE_USERS);
+        return apiController.getResource("/users", AccessRole.ROLE_USERS);
     }
 }
