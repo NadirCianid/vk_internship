@@ -64,6 +64,15 @@ public class AuthorizationController {
         return  new ArrayList<>(Collections.singleton(NO_ACCESS_MESSAGE));
     }
 
+    @PostMapping("/api/auth/addUser")
+    private String addUser(@RequestParam String login, @RequestParam String pswd, @RequestParam int roleId) {
+        if(userRepo.userCountByLogin(login) > 0) {
+            return "Пользователь с таким логином уже существует";
+        }
+
+         return  userRepo.save(new User(login, pswd, AccessRole.values()[roleId])).toString();
+    }
+
     static void checkUserAuth() {
         if (user == null) {
             user = new User("guest", "1111", AccessRole.ROLE_GUEST);

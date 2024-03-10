@@ -10,4 +10,7 @@ public interface UserRepo extends JpaRepository<User, Integer> {
 
     @Query(value = "SELECT * FROM users WHERE login=?1 AND pswd=?2",nativeQuery = true)
     User authenticate(String login, String pswd);
+
+    @Query(value = "SELECT COUNT(1) FROM users WHERE login = ?1",nativeQuery = true)
+    long userCountByLogin(String login);
 }
