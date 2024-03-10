@@ -64,11 +64,12 @@ public class ApiController {
 
         user = userRepo.authenticate(login, pswd);
 
-        log.info("Authentication by " + user);
-
-        if (user.getRole().equals(AccessRole.ROLE_GUEST)) {
+        if (user == null) {
+            user = new ApiUser("guest", "1111", AccessRole.ROLE_GUEST);
             guestMessage = "Пользователя с введенными данными нет в базе. \nВы авторизованы, как гость:\n";
         }
+
+        log.info("Authentication by " + user);
 
         return new ResponseEntity<>(guestMessage + user.toString(), HttpStatus.OK);
     }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -48,8 +49,31 @@ public class PostsController {
         return apiController.putResource("/posts/", postId, post, AccessRole.ROLE_POSTS);
     }
 
+    //Deleting a resource
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deletePost(@PathVariable("id") int postId) {
         return apiController.deleteResource("/posts/", postId, AccessRole.ROLE_POSTS);
+    }
+
+    //Filtering resources
+    @GetMapping(value = "", params = "userId")
+    public ResponseEntity<String> getPostsByUser(@RequestParam("userId") int userId) {
+        return apiController.getResource("/posts" + "?userId=" + userId, AccessRole.ROLE_POSTS);
+    }
+
+    @GetMapping(value = "", params = "title")
+    public ResponseEntity<String> getPostsByTitle(@RequestParam("title") String title) {
+        return apiController.getResource("/posts" + "?title=" + title, AccessRole.ROLE_POSTS);
+    }
+
+    @GetMapping(value = "", params = "body")
+    public ResponseEntity<String> getPostsByBody(@RequestParam("body") String body) {
+        return apiController.getResource("/posts" + "?userId=" + body, AccessRole.ROLE_POSTS);
+    }
+
+    //Listing nested resources
+    @GetMapping("/{id}/comments")
+    public ResponseEntity<String> getCommentsOfPost(@PathVariable("id") int postId) {
+        return apiController.getResource("/posts/" + postId + "/comments", AccessRole.ROLE_POSTS);
     }
 }
