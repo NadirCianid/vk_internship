@@ -8,7 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.http.HttpStatus;
 
+import java.net.http.HttpClient;
 import java.time.ZonedDateTime;
 
 @Getter
@@ -46,13 +48,13 @@ public class Log {
         return this;
     }
 
-    public Log setStatus(String status) {
-        this.status = status;
+    public Log setStatus(HttpStatus status) {
+        this.status = status.toString();
         return this;
     }
 
-    public Log setLevel(String level) {
-        this.level = level;
+    public Log setLevel(LogLevel logLevel) {
+        this.level = logLevel.name();
         return this;
     }
 

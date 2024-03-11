@@ -2,6 +2,8 @@ package com.nadir.vk_internship.controller;
 
 import com.nadir.vk_internship.entity.AccessRole;
 import com.nadir.vk_internship.entity.ApiUser;
+import com.nadir.vk_internship.entity.Log;
+import com.nadir.vk_internship.repository.LogRepo;
 import com.nadir.vk_internship.repository.UserRepo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,6 +33,8 @@ class ApiControllerTest {
     ApiUser guest, admin;
     @Mock
     UserRepo userRepo;
+    @Mock
+    LogRepo logger;
 
     @InjectMocks
     ApiController apiController;
@@ -67,14 +71,14 @@ class ApiControllerTest {
     void authUser_invalidData_userAuthorizationAsGuest() {
         //given
         String authMessage = "Пользователя с введенными данными нет в базе. \nВы авторизованы, как гость:\n";
-        var expectedResponse = new ResponseEntity<>(authMessage + guest, HttpStatus.OK);
+        var expectedResponse = new ResponseEntity<>(authMessage + guest, HttpStatus.NOT_ACCEPTABLE);
 
         //when
         var responseEntity = apiController.authUser("adminnn", "admin");
 
         //then
         assertNotNull(responseEntity);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_ACCEPTABLE, responseEntity.getStatusCode());
         assertEquals(expectedResponse.getBody(), responseEntity.getBody());
     }
 
@@ -85,14 +89,14 @@ class ApiControllerTest {
         doReturn(newUser).when(userRepo).save(any());
         apiController.setUser(admin);
 
-        var expectedResponse = new ResponseEntity<>(newUser.toString(), HttpStatus.OK);
+        var expectedResponse = new ResponseEntity<>(newUser.toString(), HttpStatus.CREATED);
 
         //when
         var responseEntity = apiController.addUser("newUser", "pswd", 1);
 
         //then
         assertNotNull(responseEntity);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
         assertEquals(expectedResponse.getBody(), responseEntity.getBody());
     }
 
@@ -101,14 +105,14 @@ class ApiControllerTest {
         //given
         apiController.setUser(guest);
 
-        var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.OK);
+        var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
 
         //when
         var responseEntity = apiController.addUser("newUser", "pswd", 1);
 
         //then
         assertNotNull(responseEntity);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_ACCEPTABLE, responseEntity.getStatusCode());
         assertEquals(expectedResponse.getBody(), responseEntity.getBody());
     }
 
@@ -118,14 +122,14 @@ class ApiControllerTest {
         doReturn((short) 1).when(userRepo).userCountByLogin("admin");
         apiController.setUser(admin);
 
-        var expectedResponse = new ResponseEntity<>("Пользователь с таким логином уже существует", HttpStatus.OK);
+        var expectedResponse = new ResponseEntity<>("Пользователь с таким логином уже существует", HttpStatus.NOT_ACCEPTABLE);
 
         //when
         var responseEntity = apiController.addUser("admin", "admin", 1);
 
         //then
         assertNotNull(responseEntity);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_ACCEPTABLE, responseEntity.getStatusCode());
         assertEquals(expectedResponse.getBody(), responseEntity.getBody());
     }
 
@@ -157,14 +161,14 @@ class ApiControllerTest {
         //given
         apiController.setUser(guest);
 
-        var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.OK);
+        var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
 
         //when
         var responseEntity = apiController.getResource("/posts/1", AccessRole.ROLE_POSTS);
 
         //then
         assertNotNull(responseEntity);
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_ACCEPTABLE, responseEntity.getStatusCode());
         assertEquals(expectedResponse.getBody(), responseEntity.getBody());
     }
 
@@ -204,10 +208,10 @@ class ApiControllerTest {
         ApiUser postViewer = new ApiUser("postViewer", "pswd", AccessRole.ROLE_POSTS);
 
         //when
-        var adminResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access");
+        var adminResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
 
         apiController.setUser(postViewer);
-        var postViewerResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access");
+        var postViewerResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
 
 
         //then
@@ -220,20 +224,20 @@ class ApiControllerTest {
         //given
         ApiUser userViewer = new ApiUser("userViewer", "pswd", AccessRole.ROLE_USERS);
 
-        var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.OK);
+        var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
 
         //when
-        var guestResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access");
+        var guestResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
 
         apiController.setUser(userViewer);
-        var userViewerResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access");
+        var userViewerResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
 
 
         //then
         assertNotNull(guestResponseEntity);
         assertNotNull(userViewerResponseEntity);
-        assertEquals(HttpStatus.OK, guestResponseEntity.getStatusCode());
-        assertEquals(HttpStatus.OK, userViewerResponseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_ACCEPTABLE, guestResponseEntity.getStatusCode());
+        assertEquals(HttpStatus.NOT_ACCEPTABLE, userViewerResponseEntity.getStatusCode());
         assertEquals(expectedResponse.getBody(), guestResponseEntity.getBody());
         assertEquals(expectedResponse.getBody(), userViewerResponseEntity.getBody());
 
