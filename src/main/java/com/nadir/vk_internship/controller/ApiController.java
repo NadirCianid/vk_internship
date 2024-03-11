@@ -2,6 +2,8 @@ package com.nadir.vk_internship.controller;
 
 import com.nadir.vk_internship.entity.AccessRole;
 import com.nadir.vk_internship.entity.ApiUser;
+import com.nadir.vk_internship.entity.Log;
+import com.nadir.vk_internship.repository.LogRepo;
 import com.nadir.vk_internship.repository.UserRepo;
 import lombok.Getter;
 import lombok.Setter;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,18 +31,37 @@ public class ApiController {
     private final String RESOURCE_URL = "https://jsonplaceholder.typicode.com";
     private final String NO_ACCESS_MESSAGE = "Эта страница не доступна для вашей роли!";
     private final UserRepo userRepo;
+    private final LogRepo logger;
     @Getter
     @Setter
     private ApiUser user;
 
     @Autowired
-    public ApiController(UserRepo userRepo) {
+    public ApiController(UserRepo userRepo, LogRepo logger) {
         this.userRepo = userRepo;
-        user = userRepo.getReferenceById(4);
+        this.logger = logger;
+        user = null;
     }
 
     @GetMapping("/api")
     public String basePage() {
+        if (user == null) {
+            user = userRepo.getReferenceById(4);
+        }
+
+        Log log = new Log()
+                .setDateTime(ZonedDateTime.now())
+                .setStatus("OK")
+                .setLevel("info")
+                .setUserLogin(user.getLogin())
+                .setUserRole(user.getRole())
+                .setHasAccess(true)
+                .setResource("/api")
+                .setHTTP_method("GET")
+                .setDescription("Visited start page");
+
+        logger.save(log);
+
         return """
                 Здравствуйте! Чтобы использовать мой API, вам необходимо авторизоваться (/api/auth).
                                 
@@ -50,6 +72,7 @@ public class ApiController {
                 - ROLE_ALBUMS (имеет доступ к альбомам и операциям с ними);
                 - ROLE_GUEST (не имеет доступа ресурсам и выдается до авторизации в системе);
                 """.formatted(RESOURCE_URL);
+
 
     }
 
