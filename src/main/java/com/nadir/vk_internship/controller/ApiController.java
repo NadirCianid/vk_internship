@@ -55,22 +55,22 @@ public class ApiController {
 
     @PostMapping("/api/auth")
     public ResponseEntity<String> authUser(@RequestParam String login, @RequestParam String pswd) {
-        String guestMessage = "Авторизация прошла успешно. Вы вошли, как пользователь:\n";
+        String authMessage = "Авторизация прошла успешно. Вы вошли, как пользователь:\n";
 
         user = userRepo.authenticate(login, pswd);
 
         if (user == null) {
             user = userRepo.getReferenceById(4);
-            guestMessage = "Пользователя с введенными данными нет в базе. \nВы авторизованы, как гость:\n";
+            authMessage = "Пользователя с введенными данными нет в базе. \nВы авторизованы, как гость:\n";
         }
 
         log.info("Authentication by " + user);
 
-        return new ResponseEntity<>(guestMessage + user.toString(), HttpStatus.OK);
+        return new ResponseEntity<>(authMessage + user.toString(), HttpStatus.OK);
     }
 
     @GetMapping("/api/auth/allUsers")
-    private List<String> getAllUsers() {
+    public List<String> getAllUsers() {
         if (user.getRole().equals(AccessRole.ROLE_ADMIN)) {
             log.info(user + " printed all users list.");
             return userRepo.findAll().stream().map(ApiUser::toString).toList();
@@ -79,7 +79,7 @@ public class ApiController {
     }
 
     @PostMapping("/api/auth/addUser")
-    private ResponseEntity<String> addUser(@RequestParam String login, @RequestParam String pswd, @RequestParam int roleId) {
+    public ResponseEntity<String> addUser(@RequestParam String login, @RequestParam String pswd, @RequestParam int roleId) {
         ResponseEntity<String> checkResult = checkAccessRole("/api/auth/addUser", AccessRole.ROLE_ADMIN, " tried to get resource ");
         if (checkResult != null) {
             return checkResult;
@@ -151,7 +151,7 @@ public class ApiController {
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
-    private ResponseEntity<String> checkAccessRole(String path, AccessRole accessRole, String action) {
+    public ResponseEntity<String> checkAccessRole(String path, AccessRole accessRole, String action) {
         if (!user.getRole().equals(AccessRole.ROLE_ADMIN) && !user.getRole().equals(accessRole)) {
             log.error(getUser() + action + path + ".");
             return new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.OK);

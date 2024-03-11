@@ -12,5 +12,5 @@ public interface UserRepo extends JpaRepository<ApiUser, Integer> {
     ApiUser authenticate(String login, String pswd);
 
     @Query(value = "SELECT COUNT(1) FROM users WHERE login = ?1",nativeQuery = true)
-    long userCountByLogin(String login);
+    short userCountByLogin(String login);
 }

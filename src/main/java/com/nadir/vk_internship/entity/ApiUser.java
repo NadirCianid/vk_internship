@@ -31,7 +31,15 @@ public class ApiUser {
         this.role = role;
     }
 
+    public ApiUser(int id, String login, String pswd, AccessRole role) {
+        this.id = id;
+        this.login = login;
+        this.pswd = pswd;
+        this.role = role;
+    }
+
     public ApiUser() {
+
     }
 
     @Override
