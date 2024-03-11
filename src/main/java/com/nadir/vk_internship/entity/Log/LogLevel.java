@@ -1,4 +1,4 @@
-package com.nadir.vk_internship.entity;
+package com.nadir.vk_internship.entity.Log;
 
 public enum LogLevel {
     FATAL,

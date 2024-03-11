@@ -1,5 +1,6 @@
-package com.nadir.vk_internship.entity;
+package com.nadir.vk_internship.entity.Log;
 
+import com.nadir.vk_internship.entity.AccessRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,7 +11,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
-import java.net.http.HttpClient;
 import java.time.ZonedDateTime;
 
 @Getter
@@ -39,63 +39,20 @@ public class Log {
     @Column(length = 1023)
     private String requestBody;
     @Column(length = 7)
-    private String HTTP_method;
+    private String HTTPMethod;
     @Column(length = 1023)
     private String description;
 
-    public Log setDateTime(ZonedDateTime dateTime) {
-        this.dateTime = dateTime;
-        return this;
-    }
 
-    public Log setStatus(HttpStatus status) {
+    public void setStatus(HttpStatus status) {
         this.status = status.toString();
-        return this;
     }
 
-    public Log setLevel(LogLevel logLevel) {
+    public void setLevel(LogLevel logLevel) {
         this.level = logLevel.name();
-        return this;
     }
 
-    public Log setUserLogin(String userLogin) {
-        this.userLogin = userLogin;
-        return this;
-    }
-
-    public Log setUserRole(AccessRole userRole) {
+    public void setUserRole(AccessRole userRole) {
         this.userRole = userRole.name();
-        return this;
     }
-
-    public Log setHasAccess(boolean hasAccess) {
-        this.hasAccess = hasAccess;
-        return this;
-    }
-
-    public Log setResource(String resource) {
-        this.resource = resource;
-        return this;
-    }
-
-    public Log setRequestParams(String requestParams) {
-        this.requestParams = requestParams;
-        return this;
-    }
-
-    public Log setRequestBody(String requestBody) {
-        this.requestBody = requestBody;
-        return this;
-    }
-
-    public Log setHTTP_method(String HTTP_method) {
-        this.HTTP_method = HTTP_method;
-        return this;
-    }
-
-    public Log setDescription(String description) {
-        this.description = description;
-        return this;
-    }
-
 }

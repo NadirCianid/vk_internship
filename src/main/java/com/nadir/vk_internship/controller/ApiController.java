@@ -2,8 +2,9 @@ package com.nadir.vk_internship.controller;
 
 import com.nadir.vk_internship.entity.AccessRole;
 import com.nadir.vk_internship.entity.ApiUser;
-import com.nadir.vk_internship.entity.Log;
-import com.nadir.vk_internship.entity.LogLevel;
+import com.nadir.vk_internship.entity.Log.Log;
+import com.nadir.vk_internship.entity.Log.LogBuilder;
+import com.nadir.vk_internship.entity.Log.LogLevel;
 import com.nadir.vk_internship.repository.LogRepo;
 import com.nadir.vk_internship.repository.UserRepo;
 import lombok.Getter;
@@ -41,7 +42,7 @@ public class ApiController {
     public ApiController(UserRepo userRepo, LogRepo logger) {
         this.userRepo = userRepo;
         this.logger = logger;
-        user = null;
+        user = new ApiUser(4,"guest", "1111", AccessRole.ROLE_GUEST);
     }
 
     @GetMapping("/api")
@@ -50,16 +51,17 @@ public class ApiController {
             user = userRepo.getReferenceById(4);
         }
 
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setStatus(HttpStatus.OK)
-                .setLevel(LogLevel.INFO)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api")
-                .setHTTP_method("GET")
-                .setDescription("Visited start page");
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .status(HttpStatus.OK)
+                .level(LogLevel.INFO)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api")
+                .HTTPMethod("GET")
+                .description("Visited start page")
+                .build();
 
         logger.save(dbLog);
 
@@ -92,17 +94,18 @@ public class ApiController {
             httpStatus = HttpStatus.NOT_ACCEPTABLE;
         }
 
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setStatus(httpStatus)
-                .setLevel(logLevel)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api/auth")
-                .setHTTP_method("GET")
-                .setRequestParams("login=" + login + "&pswd=" + pswd)
-                .setDescription(action);
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .status(httpStatus)
+                .level(logLevel)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api/auth")
+                .HTTPMethod("POST")
+                .requestParams("login=" + login + "&pswd=" + pswd)
+                .description(action)
+                .build();
 
         logger.save(dbLog);
 
@@ -113,15 +116,16 @@ public class ApiController {
 
     @GetMapping("/api/auth/allUsers")
     public ResponseEntity<List<String>> getAllUsers() {
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setStatus(HttpStatus.OK)
-                .setLevel(LogLevel.INFO)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api/auth/allUsers")
-                .setHTTP_method("GET");
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .status(HttpStatus.OK)
+                .level(LogLevel.INFO)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api/auth/allUsers")
+                .HTTPMethod("GET")
+                .build();
 
         if (user.getRole().equals(AccessRole.ROLE_ADMIN)) {
             dbLog.setDescription("Printed all users list");
@@ -132,10 +136,10 @@ public class ApiController {
             return new ResponseEntity<>(userRepo.findAll().stream().map(ApiUser::toString).toList(), HttpStatus.OK);
         }
 
-        dbLog.setLevel(LogLevel.WARN)
-                .setStatus(HttpStatus.NOT_ACCEPTABLE)
-                .setHasAccess(false)
-                .setDescription("False try");
+        dbLog.setLevel(LogLevel.WARN);
+        dbLog.setStatus(HttpStatus.NOT_ACCEPTABLE);
+        dbLog.setHasAccess(false);
+        dbLog.setDescription("False try");
         logger.save(dbLog);
 
         return new ResponseEntity<>(new ArrayList<>(Collections.singleton(NO_ACCESS_MESSAGE)), HttpStatus.NOT_ACCEPTABLE);
@@ -143,17 +147,18 @@ public class ApiController {
 
     @PostMapping("/api/auth/addUser")
     public ResponseEntity<String> addUser(@RequestParam String login, @RequestParam String pswd, @RequestParam int roleId) {
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setStatus(HttpStatus.CREATED)
-                .setLevel(LogLevel.INFO)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api/auth/addUser")
-                .setHTTP_method("POST")
-                .setRequestParams("login=" + login + "&pswd=" + pswd + "&roleId=" + roleId)
-                .setDescription("Created new ApiUser");
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .status(HttpStatus.CREATED)
+                .level(LogLevel.INFO)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api/auth/addUser")
+                .HTTPMethod("POST")
+                .requestParams("login=" + login + "&pswd=" + pswd + "&roleId=" + roleId)
+                .description("Created new ApiUser")
+                .build();
 
         ResponseEntity<String> checkResult = checkAccessRole("/api/auth/addUser", AccessRole.ROLE_ADMIN, " Tried to get resource ", dbLog);
 
@@ -162,10 +167,10 @@ public class ApiController {
         }
 
         if (userRepo.userCountByLogin(login) > 0) {
-            dbLog.setStatus(HttpStatus.NOT_ACCEPTABLE)
-                    .setLevel(LogLevel.WARN)
-                    .setHasAccess(true)
-                    .setDescription("Tried to create new ApiUser. Not unique login.");
+            dbLog.setStatus(HttpStatus.NOT_ACCEPTABLE);
+            dbLog.setLevel(LogLevel.WARN);
+            dbLog.setHasAccess(true);
+            dbLog.setDescription("Tried to create new ApiUser. Not unique login.");
             logger.save(dbLog);
 
             log.info(user + " tried to create new user: login=" + login + "; pswd=" + pswd + "; roleId=" + roleId + ".");
@@ -181,16 +186,17 @@ public class ApiController {
     }
 
     public ResponseEntity<String> getResource(String path, AccessRole accessRole) {
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setStatus(HttpStatus.OK)
-                .setLevel(LogLevel.INFO)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api" + path)
-                .setHTTP_method("GET")
-                .setDescription("Got resource(s)");
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .status(HttpStatus.OK)
+                .level(LogLevel.INFO)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api" + path)
+                .HTTPMethod("GET")
+                .description("Got resource(s)")
+                .build();
 
         ResponseEntity<String> checkResult = checkAccessRole(path, accessRole, " Tried to get resource ", dbLog);
 
@@ -207,16 +213,18 @@ public class ApiController {
 
 
     public ResponseEntity<String> postResource(String path, Object body, AccessRole accessRole) {
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setLevel(LogLevel.INFO)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api" + path)
-                .setRequestBody(body.toString())
-                .setHTTP_method("POST")
-                .setDescription("Posted resource(s)");
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .level(LogLevel.INFO)
+                .status(HttpStatus.OK)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api" + path)
+                .requestBody(body.toString())
+                .HTTPMethod("POST")
+                .description("Posted resource(s)")
+                .build();
 
         ResponseEntity<String> checkResult = checkAccessRole(path, accessRole, " Tried to post resource ", dbLog);
 
@@ -236,16 +244,17 @@ public class ApiController {
     }
 
     public ResponseEntity<String> putResource(String path, int resourceId, Object body, AccessRole accessRole) {
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setLevel(LogLevel.INFO)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api" + path)
-                .setRequestBody(body.toString())
-                .setHTTP_method("Put")
-                .setDescription("Updated resource(s)");
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .level(LogLevel.INFO)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api" + path)
+                .requestBody(body.toString())
+                .HTTPMethod("Put")
+                .description("Updated resource(s)")
+                .build();
 
         ResponseEntity<String> checkResult = checkAccessRole(path, accessRole, " Tried to update resource ", dbLog);
         if (checkResult != null) {
@@ -269,15 +278,16 @@ public class ApiController {
     }
 
     public ResponseEntity<String> deleteResource(String path, int resourceId, AccessRole accessRole) {
-        Log dbLog = new Log()
-                .setDateTime(ZonedDateTime.now())
-                .setLevel(LogLevel.INFO)
-                .setUserLogin(user.getLogin())
-                .setUserRole(user.getRole())
-                .setHasAccess(true)
-                .setResource("/api" + path + resourceId)
-                .setHTTP_method("DELETE")
-                .setDescription("Deleted resource(s)");
+        Log dbLog = new LogBuilder()
+                .dateTime(ZonedDateTime.now())
+                .level(LogLevel.INFO)
+                .userLogin(user.getLogin())
+                .userRole(user.getRole())
+                .hasAccess(true)
+                .resource("/api" + path + resourceId)
+                .HTTPMethod("DELETE")
+                .description("Deleted resource(s)")
+                .build();
 
         ResponseEntity<String> checkResult = checkAccessRole(path + resourceId, accessRole, " Tried to delete resource ", dbLog);
         if (checkResult != null) {
@@ -295,10 +305,10 @@ public class ApiController {
 
     public ResponseEntity<String> checkAccessRole(String path, AccessRole accessRole, String action, Log dbLog) {
         if (!user.getRole().equals(AccessRole.ROLE_ADMIN) && !user.getRole().equals(accessRole)) {
-            dbLog.setStatus(HttpStatus.NOT_ACCEPTABLE)
-                    .setLevel(LogLevel.WARN)
-                    .setHasAccess(false)
-                    .setDescription(action + path);
+            dbLog.setStatus(HttpStatus.NOT_ACCEPTABLE);
+            dbLog.setLevel(LogLevel.WARN);
+            dbLog.setHasAccess(false);
+            dbLog.setDescription(action + path);
             logger.save(dbLog);
 
             log.warn(getUser() + action + path + ".");
