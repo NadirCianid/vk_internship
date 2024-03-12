@@ -27,20 +27,20 @@ public class PostsController {
     //Listing all resources
     @GetMapping("")
     public ResponseEntity<String> getPosts() {
-        return apiController.getResource("/posts", AccessRole.ROLE_POSTS);
+        return apiController.getResource("/posts", "", AccessRole.ROLE_POSTS);
     }
 
 
     //Getting a resource
     @GetMapping("/{id}")
     public ResponseEntity<String> getPost(@PathVariable("id") int postId) {
-        return apiController.getResource("/posts/" + postId, AccessRole.ROLE_POSTS);
+        return apiController.getResource("/posts/", String.valueOf(postId), AccessRole.ROLE_POSTS);
     }
 
     //Creating a resource
     @PostMapping("")
     public ResponseEntity<String> addPost(@RequestBody Object post) {
-        return apiController.postResource("/posts", post, AccessRole.ROLE_POSTS);
+        return apiController.postResource("/posts/", post, AccessRole.ROLE_POSTS);
     }
 
     //Updating a resource
@@ -58,22 +58,22 @@ public class PostsController {
     //Filtering resources
     @GetMapping(value = "", params = "userId")
     public ResponseEntity<String> getPostsByUser(@RequestParam("userId") int userId) {
-        return apiController.getResource("/posts" + "?userId=" + userId, AccessRole.ROLE_POSTS);
+        return apiController.getResource("/posts" + "?userId=" + userId, "", AccessRole.ROLE_POSTS);
     }
 
     @GetMapping(value = "", params = "title")
     public ResponseEntity<String> getPostsByTitle(@RequestParam("title") String title) {
-        return apiController.getResource("/posts" + "?title=" + title, AccessRole.ROLE_POSTS);
+        return apiController.getResource("/posts" + "?title=" + title, "", AccessRole.ROLE_POSTS);
     }
 
     @GetMapping(value = "", params = "body")
     public ResponseEntity<String> getPostsByBody(@RequestParam("body") String body) {
-        return apiController.getResource("/posts" + "?userId=" + body, AccessRole.ROLE_POSTS);
+        return apiController.getResource("/posts" + "?userId=" + body, "", AccessRole.ROLE_POSTS);
     }
 
     //Listing nested resources
     @GetMapping("/{id}/comments")
     public ResponseEntity<String> getCommentsOfPost(@PathVariable("id") int postId) {
-        return apiController.getResource("/posts/" + postId + "/comments", AccessRole.ROLE_POSTS);
+        return apiController.getResource("/posts/" + postId + "/comments", "", AccessRole.ROLE_POSTS);
     }
 }

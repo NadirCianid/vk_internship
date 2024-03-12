@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.LinkedHashMap;
 
+import static com.nadir.vk_internship.controller.ApiController.convertToJson;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -132,17 +133,16 @@ class ApiControllerTest {
         //given
         apiController.setUser(admin);
 
-        String firstPost = """
-                {
-                  "userId": 1,
-                  "id": 1,
-                  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-                  "body": "quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto"
-                }""";
-        var expectedResponse = new ResponseEntity<>(firstPost, HttpStatus.OK);
+        LinkedHashMap<String, Object> firstPost = new LinkedHashMap<>();
+        firstPost.put("userId", 1);
+        firstPost.put("id", 1);
+        firstPost.put("title", "sunt aut facere repellat provident occaecati excepturi optio reprehenderit");
+        firstPost.put("body", "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto");
+
+        var expectedResponse = new ResponseEntity<>(convertToJson(firstPost), HttpStatus.OK);
 
         //when
-        var responseEntity = apiController.getResource("/posts/1", AccessRole.ROLE_POSTS);
+        var responseEntity = apiController.getResource("/posts/", "1", AccessRole.ROLE_POSTS);
 
         //then
         assertNotNull(responseEntity);
@@ -158,7 +158,7 @@ class ApiControllerTest {
         var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
 
         //when
-        var responseEntity = apiController.getResource("/posts/1", AccessRole.ROLE_POSTS);
+        var responseEntity = apiController.getResource("/posts/", "1", AccessRole.ROLE_POSTS);
 
         //then
         assertNotNull(responseEntity);
@@ -173,18 +173,12 @@ class ApiControllerTest {
 
         LinkedHashMap<String, Object> newPost = new LinkedHashMap<>();
         newPost.put("userId", 1);
-        newPost.put("id", 333);
+        newPost.put("id", 100);
         newPost.put("title", "vk internship");
         newPost.put("body", "is the best");
 
-        String responseBody = """
-                {
-                  "userId": 1,
-                  "id": 101,
-                  "title": "vk internship",
-                  "body": "is the best"
-                }""";
-        var expectedResponse = new ResponseEntity<>(responseBody, HttpStatus.OK);
+
+        var expectedResponse = new ResponseEntity<>(convertToJson(newPost), HttpStatus.OK);
 
         //when
         var responseEntity = apiController.postResource("/posts", newPost, AccessRole.ROLE_POSTS);

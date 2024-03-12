@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,7 +35,7 @@ class PostsControllerTest {
     public void getPostsTest() {
         //given
         ResponseEntity<String> posts = REST_TEMPLATE.getForEntity("https://jsonplaceholder.typicode.com/posts", String.class);
-        doReturn(posts).when(this.apiController).getResource("/posts", AccessRole.ROLE_POSTS);
+        doReturn(posts).when(this.apiController).getResource("/posts", "", AccessRole.ROLE_POSTS);
 
         //when
         var responseEntity = this.postsController.getPosts();
@@ -51,7 +52,7 @@ class PostsControllerTest {
     public void getPostTest() {
         //given
         ResponseEntity<String> post = REST_TEMPLATE.getForEntity("https://jsonplaceholder.typicode.com/posts/1", String.class);
-        doReturn(post).when(this.apiController).getResource("/posts/" + 1, AccessRole.ROLE_POSTS);
+        doReturn(post).when(this.apiController).getResource("/posts/","1", AccessRole.ROLE_POSTS);
 
         //when
         var responseEntity = this.postsController.getPost(1);
@@ -66,7 +67,7 @@ class PostsControllerTest {
     @Test
     public void addPostTest() {
         //given
-        Map<String, Object> map = new HashMap<>();
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
         map.put("userId", 1);
         map.put("title", "vk internship");
         map.put("body", "is the best");
@@ -74,7 +75,7 @@ class PostsControllerTest {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map);
 
         ResponseEntity<String> response = REST_TEMPLATE.postForEntity("https://jsonplaceholder.typicode.com/posts", entity, String.class);
-        doReturn(response).when(this.apiController).postResource(eq("/posts"), any(),  eq(AccessRole.ROLE_POSTS));
+        doReturn(response).when(this.apiController).postResource(eq("/posts/"), any(),  eq(AccessRole.ROLE_POSTS));
 
         //when
         var responseEntity = this.postsController.addPost(map);

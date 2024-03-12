@@ -26,21 +26,21 @@ public class AlbumsController {
     //Listing all resources
     @GetMapping("")
     public ResponseEntity<String> getAlbums() {
-        return apiController.getResource("/albums", AccessRole.ROLE_ALBUMS);
+        return apiController.getResource("/albums", "", AccessRole.ROLE_ALBUMS);
     }
 
 
     //Getting a resource
     @GetMapping("/{id}")
     public ResponseEntity<String> getAlbum(@PathVariable("id") int albumId) {
-        return apiController.getResource("/albums/" + albumId, AccessRole.ROLE_ALBUMS);
+        return apiController.getResource("/albums/", String.valueOf(albumId), AccessRole.ROLE_ALBUMS);
     }
 
 
     //Creating a resource
     @PostMapping("")
     public ResponseEntity<String> addAlbum(@RequestBody Object album) {
-        return apiController.postResource("/albums", album, AccessRole.ROLE_ALBUMS);
+        return apiController.postResource("/albums/", album, AccessRole.ROLE_ALBUMS);
     }
 
     //Updating a resource
@@ -58,17 +58,17 @@ public class AlbumsController {
     //Filtering resources
     @GetMapping(value = "", params = "userId")
     public ResponseEntity<String> getAlbumsByUser(@RequestParam("userId") int userId) {
-        return apiController.getResource("/albums" + "?userId=" + userId, AccessRole.ROLE_ALBUMS);
+        return apiController.getResource("/albums" + "?userId=" + userId, "", AccessRole.ROLE_ALBUMS);
     }
 
     @GetMapping(value = "", params = "title")
     public ResponseEntity<String> getAlbumsByTitle(@RequestParam("title") String title) {
-        return apiController.getResource("/albums" + "?title=" + title, AccessRole.ROLE_ALBUMS);
+        return apiController.getResource("/albums" + "?title=" + title, "", AccessRole.ROLE_ALBUMS);
     }
 
     //Listing nested resources
     @GetMapping("/{id}/photos")
     public ResponseEntity<String> getPhotosOfAlbum(@PathVariable("id") int albumId) {
-        return apiController.getResource("/albums/" + albumId + "/photos", AccessRole.ROLE_ALBUMS);
+        return apiController.getResource("/albums/" + albumId + "/photos", "", AccessRole.ROLE_ALBUMS);
     }
 }

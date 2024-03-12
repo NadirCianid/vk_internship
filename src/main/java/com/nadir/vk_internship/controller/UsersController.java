@@ -26,20 +26,20 @@ public class UsersController {
     //Listing all resources
     @GetMapping("")
     private ResponseEntity<String> getUsers() {
-        return apiController.getResource("/users", AccessRole.ROLE_USERS);
+        return apiController.getResource("/users", "", AccessRole.ROLE_USERS);
     }
 
     //Getting a resource
     @GetMapping("/{id}")
     public ResponseEntity<String> getUser(@PathVariable("id") int userId) {
-        return apiController.getResource("/users/" + userId, AccessRole.ROLE_USERS);
+        return apiController.getResource("/users/", String.valueOf(userId), AccessRole.ROLE_USERS);
     }
 
 
     //Creating a resource
     @PostMapping("")
     public ResponseEntity<String> addUser(@RequestBody Object user) {
-        return apiController.postResource("/users", user, AccessRole.ROLE_USERS);
+        return apiController.postResource("/users/", user, AccessRole.ROLE_USERS);
     }
 
 
@@ -60,28 +60,28 @@ public class UsersController {
     //Filtering resources
     @GetMapping(value = "", params = "name")
     public ResponseEntity<String> getUsersByName(@RequestParam("name") String name) {
-        return apiController.getResource("/users" + "?name=" + name, AccessRole.ROLE_USERS);
+        return apiController.getResource("/users" + "?name=" + name, "", AccessRole.ROLE_USERS);
     }
 
     @GetMapping(value = "", params = "username")
     public ResponseEntity<String> getUsersByUsername(@RequestParam("username") String username) {
-        return apiController.getResource("/users" + "?username=" + username, AccessRole.ROLE_USERS);
+        return apiController.getResource("/users" + "?username=" + username, "", AccessRole.ROLE_USERS);
     }
 
 
     //Listing nested resources
     @GetMapping("/{id}/albums")
     public ResponseEntity<String> getAlbumsOfUser(@PathVariable("id") int userId) {
-        return apiController.getResource("/users/" + userId + "/albums", AccessRole.ROLE_USERS);
+        return apiController.getResource("/users/" + userId + "/albums", "", AccessRole.ROLE_USERS);
     }
 
     @GetMapping("/{id}/posts")
     public ResponseEntity<String> getPostsOfUser(@PathVariable("id") int userId) {
-        return apiController.getResource("/users/" + userId + "/posts", AccessRole.ROLE_USERS);
+        return apiController.getResource("/users/" + userId + "/posts", "", AccessRole.ROLE_USERS);
     }
 
     @GetMapping("/{id}/todos")
     public ResponseEntity<String> getTodosOfUser(@PathVariable("id") int userId) {
-        return apiController.getResource("/users/" + userId + "/todos", AccessRole.ROLE_USERS);
+        return apiController.getResource("/users/" + userId + "/todos", "", AccessRole.ROLE_USERS);
     }
 }
