@@ -187,7 +187,9 @@ public class ApiController {
                 .description("Created new ApiUser")
                 .build();
 
-        ResponseEntity<String> checkResult = checkAccessRole("/api/auth/addUser", AccessRole.ROLE_ADMIN, " Tried to get resource ", dbLog);
+        List<AccessRole> accessRoles = new ArrayList<>(Collections.singleton(AccessRole.ROLE_ADMIN));
+
+        ResponseEntity<String> checkResult = checkAccessRole("/api/auth/addUser", accessRoles, " Tried to get resource ", dbLog);
 
         if (checkResult != null) {
             return checkResult;
@@ -212,7 +214,7 @@ public class ApiController {
         return new ResponseEntity<>(userRepo.save(newUser).toString(), HttpStatus.CREATED);
     }
 
-    public ResponseEntity<String> getResource(String resourcePath, String resourceId, AccessRole accessRole) {
+    public ResponseEntity<String> getResource(String resourcePath, String resourceId, List<AccessRole> accessRoles) {
         Log dbLog = new LogBuilder()
                 .dateTime(ZonedDateTime.now())
                 .status(HttpStatus.OK)
@@ -225,7 +227,7 @@ public class ApiController {
                 .description("Got resource(s)")
                 .build();
 
-        ResponseEntity<String> checkResult = checkAccessRole(resourcePath + resourceId, accessRole, " Tried to get resource ", dbLog);
+        ResponseEntity<String> checkResult = checkAccessRole(resourcePath + resourceId, accessRoles, " Tried to get resource ", dbLog);
 
         if (checkResult != null) {
             return checkResult;
@@ -261,7 +263,7 @@ public class ApiController {
     }
 
 
-    public ResponseEntity<String> postResource(String path, Object body, AccessRole accessRole) {
+    public ResponseEntity<String> postResource(String path, Object body, List<AccessRole> accessRoles) {
         Log dbLog = new LogBuilder()
                 .dateTime(ZonedDateTime.now())
                 .level(LogLevel.INFO)
@@ -275,7 +277,7 @@ public class ApiController {
                 .description("Posted resource(s)")
                 .build();
 
-        ResponseEntity<String> checkResult = checkAccessRole(path, accessRole, " Tried to post resource ", dbLog);
+        ResponseEntity<String> checkResult = checkAccessRole(path, accessRoles, " Tried to post resource ", dbLog);
 
         if (checkResult != null) {
             return checkResult;
@@ -299,7 +301,7 @@ public class ApiController {
         return new ResponseEntity<>(convertToJson(resource), HttpStatus.CREATED);
     }
 
-    public ResponseEntity<String> putResource(String path, int resourceId, Object body, AccessRole accessRole) {
+    public ResponseEntity<String> putResource(String path, int resourceId, Object body, List<AccessRole> accessRoles) {
         Log dbLog = new LogBuilder()
                 .dateTime(ZonedDateTime.now())
                 .level(LogLevel.INFO)
@@ -312,7 +314,7 @@ public class ApiController {
                 .description("Updated resource(s)")
                 .build();
 
-        ResponseEntity<String> checkResult = checkAccessRole(path, accessRole, " Tried to update resource ", dbLog);
+        ResponseEntity<String> checkResult = checkAccessRole(path, accessRoles, " Tried to update resource ", dbLog);
         if (checkResult != null) {
             return checkResult;
         }
@@ -352,7 +354,7 @@ public class ApiController {
         return  new ResponseEntity<>(convertToJson(resource), HttpStatus.OK);
     }
 
-    public ResponseEntity<String> deleteResource(String path, int resourceId, AccessRole accessRole) {
+    public ResponseEntity<String> deleteResource(String path, int resourceId, List<AccessRole> accessRoles) {
         Log dbLog = new LogBuilder()
                 .dateTime(ZonedDateTime.now())
                 .level(LogLevel.INFO)
@@ -365,7 +367,7 @@ public class ApiController {
                 .description("Deleted resource(s)")
                 .build();
 
-        ResponseEntity<String> checkResult = checkAccessRole(path + resourceId, accessRole, " Tried to delete resource ", dbLog);
+        ResponseEntity<String> checkResult = checkAccessRole(path + resourceId, accessRoles, " Tried to delete resource ", dbLog);
         if (checkResult != null) {
             return checkResult;
         }
@@ -380,19 +382,27 @@ public class ApiController {
         return new ResponseEntity<>("{}", HttpStatus.OK);
     }
 
-    public ResponseEntity<String> checkAccessRole(String path, AccessRole accessRole, String action, Log dbLog) {
-        if (!user.getRole().equals(AccessRole.ROLE_ADMIN) && !user.getRole().equals(accessRole)) {
-            dbLog.setStatus(HttpStatus.NOT_ACCEPTABLE);
-            dbLog.setLevel(LogLevel.WARN);
-            dbLog.setHasAccess(false);
-            dbLog.setDescription(action + path);
-            logger.save(dbLog);
-
-            log.warn(getUser() + action + path + ".");
-            return new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
+    public ResponseEntity<String> checkAccessRole(String path, List<AccessRole> accessRoles, String action, Log dbLog) {
+        boolean hasAccess = false;
+        for(AccessRole role : accessRoles) {
+            if(user.getRole().equals(role)) {
+                hasAccess = true;
+                break;
+            }
         }
 
-        return null;
+        if(hasAccess) {
+            return null;
+        }
+
+        dbLog.setStatus(HttpStatus.NOT_ACCEPTABLE);
+        dbLog.setLevel(LogLevel.WARN);
+        dbLog.setHasAccess(false);
+        dbLog.setDescription(action + path);
+        logger.save(dbLog);
+
+        log.warn(getUser() + action + path + ".");
+        return new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
     }
 
     public static String convertToJson(LinkedHashMap<String, Object> map) {

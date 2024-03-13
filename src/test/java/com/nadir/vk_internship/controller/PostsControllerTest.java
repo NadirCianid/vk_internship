@@ -1,6 +1,7 @@
 package com.nadir.vk_internship.controller;
 
 import com.nadir.vk_internship.entity.AccessRole;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,10 +13,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_ADMIN;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_POSTS;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_POSTS_EDITOR;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_POSTS_VIEWER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -24,6 +31,7 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 class PostsControllerTest {
     private final RestTemplate REST_TEMPLATE = new RestTemplate();
+    private List<AccessRole> accessRoles = Lists.newArrayList(ROLE_ADMIN, ROLE_POSTS);
 
     @Mock
     ApiController apiController;
@@ -35,7 +43,8 @@ class PostsControllerTest {
     public void getPostsTest() {
         //given
         ResponseEntity<String> posts = REST_TEMPLATE.getForEntity("https://jsonplaceholder.typicode.com/posts", String.class);
-        doReturn(posts).when(this.apiController).getResource("/posts", "", AccessRole.ROLE_POSTS);
+        accessRoles.add(ROLE_POSTS_VIEWER);
+        doReturn(posts).when(this.apiController).getResource("/posts", "", accessRoles);
 
         //when
         var responseEntity = this.postsController.getPosts();
@@ -52,7 +61,9 @@ class PostsControllerTest {
     public void getPostTest() {
         //given
         ResponseEntity<String> post = REST_TEMPLATE.getForEntity("https://jsonplaceholder.typicode.com/posts/1", String.class);
-        doReturn(post).when(this.apiController).getResource("/posts/","1", AccessRole.ROLE_POSTS);
+
+        accessRoles.add(ROLE_POSTS_VIEWER);
+        doReturn(post).when(this.apiController).getResource("/posts/","1", accessRoles);
 
         //when
         var responseEntity = this.postsController.getPost(1);
@@ -74,9 +85,10 @@ class PostsControllerTest {
 
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(map);
 
-        ResponseEntity<String> response = REST_TEMPLATE.postForEntity("https://jsonplaceholder.typicode.com/posts", entity, String.class);
-        doReturn(response).when(this.apiController).postResource(eq("/posts/"), any(),  eq(AccessRole.ROLE_POSTS));
-
+        ResponseEntity<String> response = REST_TEMPLATE.postForEntity("https://jsonplaceholder.typicode.com/posts",
+                entity, String.class);
+        accessRoles.add(ROLE_POSTS_EDITOR);
+        doReturn(response).when(this.apiController).postResource(eq("/posts/"), any(),  eq(accessRoles));
         //when
         var responseEntity = this.postsController.addPost(map);
 
@@ -99,8 +111,8 @@ class PostsControllerTest {
 
         ResponseEntity<String> response = REST_TEMPLATE.exchange("https://jsonplaceholder.typicode.com/posts/1",
                                                                     HttpMethod.PUT, entity, String.class, 1);
-
-        doReturn(response).when(this.apiController).putResource(eq("/posts/"), eq(1), any(),  eq(AccessRole.ROLE_POSTS));
+        accessRoles.add(ROLE_POSTS_EDITOR);
+        doReturn(response).when(this.apiController).putResource(eq("/posts/"), eq(1), any(),  eq(accessRoles));
 
         //when
         var responseEntity = this.postsController.updatePost(map, 1);
@@ -115,7 +127,8 @@ class PostsControllerTest {
     public void deletePostTest() {
         //given
         ResponseEntity<String> response = new ResponseEntity<>("{}", HttpStatus.OK);
-        doReturn(response).when(this.apiController).deleteResource("/posts/", 1, AccessRole.ROLE_POSTS);
+        accessRoles.add(ROLE_POSTS_EDITOR);
+        doReturn(response).when(this.apiController).deleteResource("/posts/", 1, accessRoles);
 
         //when
         var responseEntity = this.postsController.deletePost(1);

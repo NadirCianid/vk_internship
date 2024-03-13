@@ -15,8 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import static com.nadir.vk_internship.controller.ApiController.convertToJson;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_ADMIN;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_POSTS;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,6 +28,7 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 class ApiControllerTest {
     private final String NO_ACCESS_MESSAGE = "Эта страница не доступна для вашей роли!";
+    private final List<AccessRole> accessRoles = List.of(ROLE_ADMIN, ROLE_POSTS);
     ApiUser guest, admin;
     @Mock
     UserRepo userRepo;
@@ -142,7 +146,7 @@ class ApiControllerTest {
         var expectedResponse = new ResponseEntity<>(convertToJson(firstPost), HttpStatus.OK);
 
         //when
-        var responseEntity = apiController.getResource("/posts/", "1", AccessRole.ROLE_POSTS);
+        var responseEntity = apiController.getResource("/posts/", "1", accessRoles);
 
         //then
         assertNotNull(responseEntity);
@@ -158,7 +162,7 @@ class ApiControllerTest {
         var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
 
         //when
-        var responseEntity = apiController.getResource("/posts/", "1", AccessRole.ROLE_POSTS);
+        var responseEntity = apiController.getResource("/posts/", "1", accessRoles);
 
         //then
         assertNotNull(responseEntity);
@@ -178,10 +182,10 @@ class ApiControllerTest {
         newPost.put("body", "is the best");
 
 
-        var expectedResponse = new ResponseEntity<>(convertToJson(newPost), HttpStatus.OK);
+        var expectedResponse = new ResponseEntity<>(convertToJson(newPost), HttpStatus.CREATED);
 
         //when
-        var responseEntity = apiController.postResource("/posts", newPost, AccessRole.ROLE_POSTS);
+        var responseEntity = apiController.postResource("/posts/", newPost, accessRoles);
 
         //then
         assertNotNull(responseEntity);
@@ -196,10 +200,10 @@ class ApiControllerTest {
         ApiUser postViewer = new ApiUser("postViewer", "pswd", AccessRole.ROLE_POSTS);
 
         //when
-        var adminResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
+        var adminResponseEntity = apiController.checkAccessRole("/test", accessRoles, "test access", new Log());
 
         apiController.setUser(postViewer);
-        var postViewerResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
+        var postViewerResponseEntity = apiController.checkAccessRole("/test", accessRoles, "test access", new Log());
 
 
         //then
@@ -215,10 +219,10 @@ class ApiControllerTest {
         var expectedResponse = new ResponseEntity<>(NO_ACCESS_MESSAGE, HttpStatus.NOT_ACCEPTABLE);
 
         //when
-        var guestResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
+        var guestResponseEntity = apiController.checkAccessRole("/test", accessRoles, "test access", new Log());
 
         apiController.setUser(userViewer);
-        var userViewerResponseEntity = apiController.checkAccessRole("/test", AccessRole.ROLE_POSTS, "test access", new Log());
+        var userViewerResponseEntity = apiController.checkAccessRole("/test", accessRoles, "test access", new Log());
 
 
         //then

@@ -1,5 +1,6 @@
 package com.nadir.vk_internship.controller;
 
+import com.google.common.collect.Lists;
 import com.nadir.vk_internship.entity.AccessRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_ADMIN;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_ALBUMS;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_ALBUMS_EDITOR;
+import static com.nadir.vk_internship.entity.AccessRole.ROLE_ALBUMS_VIEWER;
 
 @Slf4j
 @RequestMapping("/api/albums")
@@ -21,54 +28,63 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AlbumsController {
     private final ApiController apiController;
+    private List<AccessRole> accessRoles = Lists.newArrayList(ROLE_ADMIN, ROLE_ALBUMS);
 
 
     //Listing all resources
     @GetMapping("")
     public ResponseEntity<String> getAlbums() {
-        return apiController.getResource("/albums", "", AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_VIEWER);
+        return apiController.getResource("/albums", "", accessRoles);
     }
 
 
     //Getting a resource
     @GetMapping("/{id}")
     public ResponseEntity<String> getAlbum(@PathVariable("id") int albumId) {
-        return apiController.getResource("/albums/", String.valueOf(albumId), AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_VIEWER);
+        return apiController.getResource("/albums/", String.valueOf(albumId), accessRoles);
     }
 
 
     //Creating a resource
     @PostMapping("")
     public ResponseEntity<String> addAlbum(@RequestBody Object album) {
-        return apiController.postResource("/albums/", album, AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_EDITOR);
+        return apiController.postResource("/albums/", album, accessRoles);
     }
 
     //Updating a resource
     @PutMapping("/{id}")
     public ResponseEntity<String> updateAlbum(@RequestBody Object album, @PathVariable("id") int albumId) {
-        return apiController.putResource("/albums/", albumId, album, AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_EDITOR);
+        return apiController.putResource("/albums/", albumId, album, accessRoles);
     }
 
     //Deleting a resource
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteAlbum(@PathVariable("id") int albumId) {
-        return apiController.deleteResource("/albums/", albumId, AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_EDITOR);
+        return apiController.deleteResource("/albums/", albumId, accessRoles);
     }
 
     //Filtering resources
     @GetMapping(value = "", params = "userId")
     public ResponseEntity<String> getAlbumsByUser(@RequestParam("userId") int userId) {
-        return apiController.getResource("/albums" + "?userId=" + userId, "", AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_VIEWER);
+        return apiController.getResource("/albums" + "?userId=" + userId, "", accessRoles);
     }
 
     @GetMapping(value = "", params = "title")
     public ResponseEntity<String> getAlbumsByTitle(@RequestParam("title") String title) {
-        return apiController.getResource("/albums" + "?title=" + title, "", AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_VIEWER);
+        return apiController.getResource("/albums" + "?title=" + title, "", accessRoles);
     }
 
     //Listing nested resources
     @GetMapping("/{id}/photos")
     public ResponseEntity<String> getPhotosOfAlbum(@PathVariable("id") int albumId) {
-        return apiController.getResource("/albums/" + albumId + "/photos", "", AccessRole.ROLE_ALBUMS);
+        accessRoles.add(ROLE_ALBUMS_VIEWER);
+        return apiController.getResource("/albums/" + albumId + "/photos", "", accessRoles);
     }
 }
